@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+	<file source-language="en" datatype="plaintext" original="EXT:fluid_styled_content/Configuration/Sets/FluidStyledContent/labels.xlf" date="2024-09-05T08:00:00Z" product-name="fluid_styled_content">
+		<header/>
+		<body>
+			<trans-unit id="label">
+				<source>QkSkima Api</source>
+			</trans-unit>
+
+			<trans-unit id="categories.QkSkima">
+				<source>QkSkima Inc.</source>
+			</trans-unit>
+			<trans-unit id="categories.QkSkima.Api">
+				<source>QkSkima Api</source>
+			</trans-unit>
+
+			<trans-unit id="settings.api.templateRootPath">
+				<source>Templates: Path to the Api templates</source>
+			</trans-unit>
+			<trans-unit id="settings.api.partialRootPath">
+				<source>Partials: Path to the Api partials</source>
+			</trans-unit>
+			<trans-unit id="settings.api.layoutRootPath">
+				<source>Layouts: Path to the Api layouts</source>
+			</trans-unit>
+		</body>
+	</file>
+</xliff>

@@ -1,0 +1,18 @@
+categories:
+  QkSkima:
+  QkSkima.Api:
+    parent: QkSkima
+
+settings:
+  api.templateRootPath:
+    category: QkSkima.Api
+    type: string
+    default: 'EXT:qkskima_api/Resources/Private/PageView/Api/'
+  api.partialRootPath:
+    category: QkSkima.Api
+    type: string
+    default: 'EXT:qkskima_api/Resources/Private/PageView/Partials/'
+  api.layoutRootPath:
+    category: QkSkima.Api
+    type: string
+    default: 'EXT:qkskima_api/Resources/Private/PageView/Layouts/'

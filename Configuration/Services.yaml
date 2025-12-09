@@ -1,0 +1,14 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  QkSkima\Api\:
+    resource: '../Classes/*'
+
+  QkSkima\Api\Middleware\ApiMiddleware:
+    arguments:
+      $matcher: '@QkSkima\Api\Routes\EndpointMatcher'
+    public: true
+    shared: true

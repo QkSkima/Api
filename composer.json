@@ -1,0 +1,41 @@
+{
+    "name": "qkskima/api",
+    "type": "typo3-cms-extension",
+    "description": "A lightweight TYPO3 API middleware providing a clean, Extbase-free way to define REST-style endpoints under /api/* paths. Includes CSRF protection, frontend authentication support, and allows endpoint access from Fluid without plugins or TypoScript. Ideal for lean SPA-like applications, HTML-over-the-wire workflows, or lightweight headless-style integrations without a frontend build pipeline.",
+    "homepage": "https://www.qkskima.com",
+    "authors": [
+        {
+        "name": "Colin Atkins",
+        "role": "Developer",
+        "homepage": "https://www.qkskima.com"
+        }
+    ],
+    "license": ["GPL-2.0-or-later"],
+    "keywords": [
+        "TYPO3 CMS",
+        "API",
+        "middleware",
+        "REST",
+        "controller",
+        "csrf",
+        "frontend",
+        "extbase alternative",
+        "headless",
+        "spa"
+    ],
+    "require": {
+        "typo3/cms-core": "^13.4 || ^14.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "QkSkima\\Api\\": "Classes/"
+        }
+    },
+    "extra": {
+        "typo3/cms": {
+            "extension-key": "qkskima_api"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
