@@ -12,3 +12,10 @@ services:
       $matcher: '@QkSkima\Api\Routes\EndpointMatcher'
     public: true
     shared: true
+
+  QkSkima\Api\Command\RoutesCommand:
+    tags:
+      - name: 'console.command'
+        command: 'qkskima:api:routes'
+        description: 'List all registered API routes'
+        schedulable: false

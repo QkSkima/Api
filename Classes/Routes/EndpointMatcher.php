@@ -10,57 +10,116 @@ declare(strict_types=1);
 namespace QkSkima\Api\Routes;
 
 use InvalidArgumentException;
+use QkSkima\Api\ApiRouter;
 
 class EndpointMatcher
 {
-    private string $apiVersion = '';
-    private string $endpointId = '';
+    private string $routePath = '';
+    private string $httpMethod = '';
+    private ?array $resolvedRoute = null;
 
     /**
-     * Parse the path and extract version and endpoint
+     * Parse the path and resolve it against registered routes
      *
-     * @param string $path Full request path (e.g. /api/v1/users/list)
-     * @return bool True if matched, false otherwise
+     * @param string $path Request path (e.g. /v1/users/show or v1/users/show)
+     * @param string $httpMethod HTTP method (GET, POST, etc.)
+     * @return bool True if matched and resolved, false otherwise
      * @throws InvalidArgumentException If unsafe characters are detected
      */
-    public function match(string $path): bool
+    public function match(string $path, string $httpMethod = 'GET'): bool
     {
         $path = trim($path, '/');
+        $this->httpMethod = strtoupper($httpMethod);
 
-        // Match /api/{version}/{everything_else_as_endpoint}
-        if (!preg_match('#^api/([^/]+)/(.+)$#', $path, $matches)) {
+        if (empty($path)) {
             return false;
         }
 
-        $version = $matches[1];
-        $endpoint = $matches[2];
-
-        // Sanitize version
-        if (!$this->isValidSegment($version)) {
-            throw new InvalidArgumentException('Unsafe characters in API version.');
-        }
-
-        // Endpoint can include slashes, validate each segment
-        foreach (explode('/', $endpoint) as $segment) {
+        // Validate each segment of the route path
+        foreach (explode('/', $path) as $segment) {
             if (!$this->isValidSegment($segment)) {
-                throw new InvalidArgumentException('Unsafe characters in endpoint segment.');
+                return false;
             }
         }
 
-        $this->apiVersion = $version;
-        $this->endpointId = $endpoint;
+        $this->routePath = $path;
 
-        return true;
+        // Try to resolve the route using ApiRouter
+        $router = ApiRouter::getInstance();
+        $this->resolvedRoute = $router->resolve($this->routePath, $this->httpMethod);
+
+        return $this->resolvedRoute !== null;
     }
 
-    public function getApiVersion(): string
+    /**
+     * Get the extracted route path
+     *
+     * @return string
+     */
+    public function getRoutePath(): string
     {
-        return $this->apiVersion;
+        return $this->routePath;
     }
 
-    public function getEndpointId(): string
+    /**
+     * Get the HTTP method
+     *
+     * @return string
+     */
+    public function getHttpMethod(): string
     {
-        return $this->endpointId;
+        return $this->httpMethod;
+    }
+
+    /**
+     * Get the resolved route information
+     *
+     * @return array|null ['controller' => string, 'action' => string|null, 'method' => string|null, 'namespace' => string, 'templatePath' => string]
+     */
+    public function getResolvedRoute(): ?array
+    {
+        return $this->resolvedRoute;
+    }
+
+    /**
+     * Get the controller class from resolved route
+     *
+     * @return string|null
+     */
+    public function getController(): ?string
+    {
+        return $this->resolvedRoute['controller'] ?? null;
+    }
+
+    /**
+     * Get the action method from resolved route
+     *
+     * @return string|null
+     */
+    public function getAction(): ?string
+    {
+        return $this->resolvedRoute['action'] ?? null;
+    }
+
+    /**
+     * Get the namespace from resolved route
+     *
+     * @return string|null
+     */
+    public function getNamespace(): ?string
+    {
+        return $this->resolvedRoute['namespace'] ?? null;
+    }
+
+    /**
+     * Get the template path from resolved route
+     * Format: Namespace/ControllerName/ActionName (e.g., V1/Workflow/Login)
+     *
+     * @return string|null
+     */
+    public function getTemplatePath(): ?string
+    {
+        return $this->resolvedRoute['templatePath'] ?? null;
     }
 
     /**

@@ -30,7 +30,7 @@ use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 use TYPO3\CMS\Core\View\ViewInterface;
 
-abstract class AbstractApiController
+abstract class AbstractController
 {
     protected ServerRequestInterface $request;
     protected RequestHandlerInterface $handler;
@@ -45,22 +45,17 @@ abstract class AbstractApiController
     protected Site $site;
     protected PageRouter $pageRouter;
 
-    protected string $apiVersion;
-    protected string $endpointId;
+    protected array $route;
     protected string $templateRoot;
 
     const TURBO_STREAM = 'text/vnd.turbo-stream.html';
 
     public function __construct(
         ServerRequestInterface $request,
-        RequestHandlerInterface $handler,
-        string $apiVersion,
-        string $endpointId
+        array $route
     ) {
         $this->request = $request;
-        $this->handler = $handler;
-        $this->apiVersion = $apiVersion;
-        $this->endpointId = $endpointId;
+        $this->route = $route;
 
         $this->response = new Response();
         $this->viewFactory = GeneralUtility::makeInstance(ViewFactoryInterface::class);
@@ -208,10 +203,7 @@ abstract class AbstractApiController
     {
         // Try autoresolve of template
         if (empty($template)) {
-            $template = ApiRouter::toCamelCase($this->apiVersion)
-                . '/'
-                . ApiRouter::toCamelCase($this->endpointId)
-            ;
+            $template = ApiRouter::toCamelCase($this->route['templatePath']);
         }
         
         $this->response->getBody()->write($this->view->render($template));

@@ -28,16 +28,15 @@ class ApiMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        [$path, $httpVerb] = [$request->getUri()->getPath(), $request->getMethod()];
+
         // If no API route matches, pass the request to next handler
-        if (!$this->matcher->match($request->getUri()->getPath())) {
+        if (!$this->matcher->match($path, $httpVerb)) {
             return $handler->handle($request);
         }
 
-        $version = $this->matcher->getApiVersion();
-        $endpoint = $this->matcher->getEndpointId();
-
         $router = ApiRouter::getInstance();
-        $route = $router->resolve($version, $endpoint);
+        $route = $router->resolve($path, $httpVerb);
 
         if ($route === null || !class_exists($route['controller'])) {
             // Route not registered or controller missing
@@ -48,7 +47,7 @@ class ApiMiddleware implements MiddlewareInterface
         $actionMethod = $route['action'] ?? 'ingress'; // default fallback to ingress
 
         // Instantiate controller
-        $controller = GeneralUtility::makeInstance($controllerClass, $request, $handler, $version, $endpoint);
+        $controller = GeneralUtility::makeInstance($controllerClass, $request, $route);
 
         // Call the action dynamically
         return $controller->callAction($controllerClass, $actionMethod);

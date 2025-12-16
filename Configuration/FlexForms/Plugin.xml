@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<T3DataStructure>
+    <meta>
+        <langDisable>1</langDisable>
+    </meta>
+
+    <sheets>
+        <general>
+            <ROOT>
+                <sheetTitle>General</sheetTitle>
+                <type>array</type>
+                <el>
+
+                    <!-- Controller select -->
+                    <controller>
+                        <label>LLL:EXT:qkskima_api/Resources/Private/Language/locallang_db.xlf:flexform.controller</label>
+                        <description>LLL:EXT:qkskima_api/Resources/Private/Language/locallang_db.xlf:flexform.controller.description</description>
+                        <onChange>reload</onChange>
+                        <config>
+                            <type>select</type>
+                            <renderType>selectSingle</renderType>
+                            <items>
+                                <numIndex index="0">
+                                    <numIndex index="0">-- Please select a controller --</numIndex>
+                                    <numIndex index="1"></numIndex>
+                                </numIndex>
+                            </items>
+                            <itemsProcFunc>QkSkima\Api\FlexForm\ControllerItemsProvider->getControllers</itemsProcFunc>
+                            <size>1</size>
+                        </config>
+                    </controller>
+
+                    <!-- Action select -->
+                    <action>
+                        <label>LLL:EXT:qkskima_api/Resources/Private/Language/locallang_db.xlf:flexform.action</label>
+                        <description>LLL:EXT:qkskima_api/Resources/Private/Language/locallang_db.xlf:flexform.action.description</description>
+                        <displayCond>FIELD:controller:REQ:true</displayCond>
+                        <config>
+                            <type>select</type>
+                            <renderType>selectSingle</renderType>
+                            <items>
+                                <numIndex index="0">
+                                    <numIndex index="0">-- Please select an action --</numIndex>
+                                    <numIndex index="1"></numIndex>
+                                </numIndex>
+                            </items>
+                            <itemsProcFunc>QkSkima\Api\FlexForm\ActionItemsProvider->getActions</itemsProcFunc>
+                            <size>1</size>
+                        </config>
+                    </action>
+
+                </el>
+            </ROOT>
+        </general>
+    </sheets>
+</T3DataStructure>

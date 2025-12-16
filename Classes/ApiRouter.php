@@ -15,7 +15,13 @@ class ApiRouter
 
     /**
      * Registered routes
-     * Format: ['v1' => ['users' => ['controller' => ControllerClass::class, 'action' => 'methodName']]]
+     * Format: ['api/v1/order/new' => [
+     *     'controller' => ControllerClass::class,
+     *     'action' => 'methodName',
+     *     'method' => 'GET',
+     *     'namespace' => 'v1',
+     *     'templatePath' => 'V1/Order/New'
+     * ]]
      */
     private array $routes = [];
 
@@ -30,68 +36,186 @@ class ApiRouter
     }
 
     /**
-     * Register a route with a controller class and optional action method
+     * Define routes using a fluent callback syntax
      *
-     * @param string $version
-     * @param string $endpointId
-     * @param string $controllerClass
-     * @param string|null $actionMethod Optional, default null
+     * @param callable $callback
      */
-    public function draw(string $version, string $endpointId, string $controllerClass, ?string $actionMethod = null): void
+    public static function draw(callable $callback): void
     {
-        $version = strtolower($version);
-        $endpointId = strtolower($endpointId);
+        $instance = self::getInstance();
+        $builder = new RouteBuilder($instance);
+        $callback($builder);
+    }
 
-        if (!isset($this->routes[$version])) {
-            $this->routes[$version] = [];
-        }
-
-        $this->routes[$version][$endpointId] = [
-            'controller' => $controllerClass,
-            'action' => $actionMethod
+    /**
+     * Register a route internally
+     *
+     * @param string $path Full path including scope (e.g., 'api/v1/order/new')
+     * @param string $controller
+     * @param string|null $action
+     * @param string|null $method HTTP method (GET, POST, etc.) or null for any
+     * @param string $namespace Namespace path for templates (e.g., 'v1')
+     */
+    public function register(string $path, string $controller, ?string $action, ?string $method, string $namespace): void
+    {
+        $path = strtolower(trim($path, '/'));
+        
+        $key = $method ? "{$method}:{$path}" : $path;
+        
+        // Build template path: Namespace/ControllerName/ActionName
+        $templatePath = $this->buildTemplatePath($namespace, $controller, $action);
+        
+        $this->routes[$key] = [
+            'controller' => $controller,
+            'action' => $action,
+            'method' => $method,
+            'path' => $path,
+            'namespace' => $namespace,
+            'templatePath' => $templatePath
         ];
     }
 
     /**
-     * Return controller class for a route
+     * Resolve a route by path and optional HTTP method
+     *
+     * @param string $path
+     * @param string|null $method HTTP method (GET, POST, etc.)
+     * @return array|null ['controller' => string, 'action' => string|null, 'method' => string|null, 'namespace' => string, 'templatePath' => string]
      */
-    public function getController(string $version, string $endpointId): ?string
+    public function resolve(string $path, ?string $method = null): ?array
     {
-        $route = $this->getRoute($version, $endpointId);
+        $path = strtolower(trim($path, '/'));
+        
+        // Try to match with specific method first
+        if ($method !== null) {
+            $key = strtoupper($method) . ':' . $path;
+            if (isset($this->routes[$key])) {
+                return [
+                    'controller' => $this->routes[$key]['controller'],
+                    'action' => $this->routes[$key]['action'],
+                    'method' => $this->routes[$key]['method'],
+                    'namespace' => $this->routes[$key]['namespace'],
+                    'templatePath' => $this->routes[$key]['templatePath']
+                ];
+            }
+        }
+        
+        // Fall back to any method
+        if (isset($this->routes[$path])) {
+            return [
+                'controller' => $this->routes[$path]['controller'],
+                'action' => $this->routes[$path]['action'],
+                'method' => $this->routes[$path]['method'],
+                'namespace' => $this->routes[$path]['namespace'],
+                'templatePath' => $this->routes[$path]['templatePath']
+            ];
+        }
+        
+        return null;
+    }
+
+    /**
+     * Get controller for a route
+     *
+     * @param string $path
+     * @param string|null $method
+     * @return string|null
+     */
+    public function getController(string $path, ?string $method = null): ?string
+    {
+        $route = $this->resolve($path, $method);
         return $route['controller'] ?? null;
     }
 
     /**
-     * Return action method for a route (if set)
+     * Get action for a route
+     *
+     * @param string $path
+     * @param string|null $method
+     * @return string|null
      */
-    public function getAction(string $version, string $endpointId): ?string
+    public function getAction(string $path, ?string $method = null): ?string
     {
-        $route = $this->getRoute($version, $endpointId);
+        $route = $this->resolve($path, $method);
         return $route['action'] ?? null;
     }
 
     /**
-     * Return both controller and action together
+     * Get template path for a route
+     *
+     * @param string $path
+     * @param string|null $method
+     * @return string|null
      */
-    public function resolve(string $version, string $endpointId): ?array
+    public function getTemplatePath(string $path, ?string $method = null): ?string
     {
-        $route = $this->getRoute($version, $endpointId);
-        return $route ? [
-            'controller' => $route['controller'],
-            'action' => $route['action'] ?? null
-        ] : null;
+        $route = $this->resolve($path, $method);
+        return $route['templatePath'] ?? null;
     }
 
-    private function getRoute(string $version, string $endpointId): ?array
+    /**
+     * Get all registered routes (for debugging)
+     *
+     * @return array
+     */
+    public function getRoutes(): array
     {
-        $version = strtolower($version);
-        $endpointId = strtolower($endpointId);
-        return $this->routes[$version][$endpointId] ?? null;
+        return $this->routes;
+    }
+
+    /**
+     * Build template path from namespace, controller, and action
+     * Format: Namespace/ControllerName/ActionName
+     *
+     * @param string $namespace
+     * @param string $controller
+     * @param string|null $action
+     * @return string
+     */
+    private function buildTemplatePath(string $namespace, string $controller, ?string $action): string
+    {
+        $parts = [];
+        
+        // Add namespace (convert to PascalCase)
+        if (!empty($namespace)) {
+            $parts[] = self::toCamelCase($namespace);
+        }
+        
+        // Add controller name (without "Controller" suffix)
+        $controllerName = $this->extractControllerName($controller);
+        $parts[] = self::toCamelCase($controllerName);
+        
+        // Add action (convert to PascalCase)
+        if (!empty($action)) {
+            $parts[] = self::toCamelCase($action);
+        }
+        
+        return implode('/', $parts);
+    }
+
+    /**
+     * Extract controller name from fully qualified class name
+     * Example: App\Controller\WorkflowController -> Workflow
+     *
+     * @param string $controllerClass
+     * @return string
+     */
+    private function extractControllerName(string $controllerClass): string
+    {
+        $parts = explode('\\', $controllerClass);
+        $className = end($parts);
+        
+        // Remove "Controller" suffix if present
+        if (str_ends_with($className, 'Controller')) {
+            $className = substr($className, 0, -10);
+        }
+        
+        return $className;
     }
 
     public static function toCamelCase(string $string): string
     {
-        // Split by slash
+        // Split by slash for nested paths
         $segments = explode('/', $string);
 
         // Convert each segment to CamelCase

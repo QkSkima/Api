@@ -1,0 +1,13 @@
+tt_content.list.20.qkskimaapi_pi1 = USER
+tt_content.list.20.qkskimaapi_pi1 {
+    userFunc = QkSkima\Api\Plugin\Renderer->render
+    data = TEXT
+    data.current = 1
+}
+
+tt_content.list.20.qkskimaapi_pi2 = USER_INT
+tt_content.list.20.qkskimaapi_pi2 {
+    userFunc = QkSkima\Api\Plugin\Renderer->render
+    data = TEXT
+    data.current = 1
+}

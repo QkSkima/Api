@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2">
+    <file
+        source-language="en"
+        datatype="plaintext"
+        original="messages"
+        product-name="qkskima_api"
+    >
+        <header/>
+        <body>
+
+            <!-- Plugin labels -->
+            <trans-unit id="plugin.renderer.1">
+                <source>QkSkima Api Plugin Renderer (cached)</source>
+            </trans-unit>
+
+            <trans-unit id="plugin.renderer.2">
+                <source>QkSkima Api Plugin Renderer (non-cached)</source>
+            </trans-unit>
+
+            <!-- FlexForm labels -->
+            <trans-unit id="flexform.controller">
+                <source>Controller</source>
+            </trans-unit>
+
+            <trans-unit id="flexform.controller.description">
+                <source>Select the controller to be executed</source>
+            </trans-unit>
+
+            <trans-unit id="flexform.action">
+                <source>Action</source>
+            </trans-unit>
+
+            <trans-unit id="flexform.action.description">
+                <source>Select the action for the selected controller</source>
+            </trans-unit>
+
+        </body>
+    </file>
+</xliff>
