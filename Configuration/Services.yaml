@@ -19,3 +19,9 @@ services:
         command: 'qkskima:api:routes'
         description: 'List all registered API routes'
         schedulable: false
+
+  QkSkima\Api\Command\GenerateRoutesCommand:
+    tags:
+      - name: 'console.command'
+        command: 'qkskima:api:generate-routes'
+        description: 'Generate routes.yaml for selected extension from ApiRouter routes'
