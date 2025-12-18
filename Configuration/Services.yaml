@@ -25,3 +25,18 @@ services:
       - name: 'console.command'
         command: 'qkskima:api:generate-routes'
         description: 'Generate routes.yaml for selected extension from ApiRouter routes'
+
+  QkSkima\Api\Command\GenerateControllerCommand:
+    tags:
+      - name: 'console.command'
+        command: 'qkskima:api:generate-controller'
+        description: 'Generate a controller class in a selected extension'
+        
+  lowlevel.configuration.module.provider.qkskimaapiroutes:
+    class: 'QkSkima\Api\ConfigurationModuleProvider\ApiRoutesConfigurationProvider'
+    tags:
+      - name: 'lowlevel.configuration.module.provider'
+        identifier: 'qkSkimaApiRoutes'
+        label: 'QkSkima Api Routes'
+        before: 'eventListeners'
+        after: 'sitesYamlConfiguration'
