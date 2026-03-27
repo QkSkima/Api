@@ -13,8 +13,10 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use QkSkima\Api\ApiRouter;
+use QkSkima\Api\Controller\Attributes\AfterFilter;
 use QkSkima\Api\Controller\Attributes\BeforeFilter;
 use QkSkima\Api\Controller\Exceptions\ControllerActionNotFound;
+use QkSkima\Api\Controller\Exceptions\ControllerParameterNotFound;
 use QkSkima\Api\Controller\Exceptions\RequestTokenMissing;
 use QkSkima\Api\Controller\Exceptions\RequestTokenNonVerifiable;
 use ReflectionClass;
@@ -79,14 +81,16 @@ abstract class AbstractController
         $this->runBeforeFilters($action);
 
         if (!method_exists($this, $action)) {
-            throw new ControllerActionNotFound("Action $action not found. Have you specified it?");
+            throw new ControllerActionNotFound("Action $action not found");
         }
 
         $this->resolveContentType();
 
-        return $this->$action();
+        $actionResponse = $this->$action();
 
-        // TODO Integrate afterFilters here and automatic call to render method to method names template file
+        $this->runAfterFilters($action);
+
+        return $actionResponse;
     }
 
     protected function runBeforeFilters(string $action): void
@@ -104,6 +108,25 @@ abstract class AbstractController
 
             if ($shouldRun && method_exists($this, $before->method)) {
                 $this->{$before->method}();
+            }
+        }
+    }
+
+    protected function runAfterFilters(string $action): void
+    {
+        $reflection = new ReflectionClass($this);
+        $attributes = $reflection->getAttributes(AfterFilter::class);
+
+        foreach ($attributes as $attr) {
+            /** @var AfterFilter $after */
+            $after = $attr->newInstance();
+
+            $shouldRun =
+                (empty($after->only) || in_array($action, $after->only, true)) &&
+                (empty($after->except) || !in_array($action, $after->except, true));
+
+            if ($shouldRun && method_exists($this, $after->method)) {
+                $this->{$after->method}();
             }
         }
     }
@@ -146,8 +169,11 @@ abstract class AbstractController
         if (isset($queryParams[$name])) {
             return $queryParams[$name];
         }
+        if (!is_null($default)) {
+            return $default;
+        }
 
-        return $default;
+        throw new ControllerParameterNotFound('Parameter not found, available parameters are: ' . array_keys(array_merge($postParams, $queryParams)));
     }
 
     public function getSettings(): array
