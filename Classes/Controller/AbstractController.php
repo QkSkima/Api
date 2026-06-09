@@ -173,7 +173,7 @@ abstract class AbstractController
             return $default;
         }
 
-        throw new ControllerParameterNotFound('Parameter not found, available parameters are: ' . array_keys(array_merge($postParams, $queryParams)));
+        throw new ControllerParameterNotFound('Parameter not found, available parameters are: ' . implode(', ', array_keys(array_merge($postParams, $queryParams))));
     }
 
     public function getSettings(): array
