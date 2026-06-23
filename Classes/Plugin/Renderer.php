@@ -45,8 +45,8 @@ class Renderer
             // Get FlexForm settings (controller and action)
             $flexFormSettings = $this->getFlexFormSettings($contentData['pi_flexform'] ?? '');
 
-            $controllerClass = $flexFormSettings['controller'] ?? null;
-            $actionMethod = $flexFormSettings['action'] ?? null;
+            $controllerClass = $flexFormSettings['controller'] ?? $conf['controller'] ?? null;
+            $actionMethod = $flexFormSettings['action'] ?? $conf['action'] ?? null;
 
             // Validate that controller and action are selected
             if (empty($controllerClass)) {
